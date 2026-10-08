@@ -36,10 +36,12 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title = "Acc
 
   return (
     <div className="modal-overlay superposed-modal" onClick={handleClose}>
-      <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content modal-password-padded" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="flex-align-center gap-2">
-            <Lock size={20} className="text-amber" />
+          <div className="flex-align-center gap-3">
+            <div className="lock-icon-wrapper">
+              <Lock size={20} className="text-amber" />
+            </div>
             <h3 className="modal-title">{title}</h3>
           </div>
           <button className="btn btn-icon btn-secondary" onClick={handleClose}>
@@ -47,12 +49,12 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title = "Acc
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body flex-col gap-3">
-          <p className="text-muted text-sm">
+        <form onSubmit={handleSubmit} className="modal-body-password-spaced">
+          <p className="password-instruction-text">
             Ingresa la clave de acceso para continuar:
           </p>
 
-          <div className="input-group">
+          <div className="input-group my-3">
             <label className="input-label">
               <KeyRound size={16} className="text-cyan" />
               <span>Clave de Acceso</span>
@@ -62,22 +64,22 @@ export default function PasswordModal({ isOpen, onClose, onSuccess, title = "Acc
               placeholder="••••••••"
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
-              className={`custom-input ${errorMsg ? 'input-error' : ''}`}
+              className={`custom-input password-input-field ${errorMsg ? 'input-error' : ''}`}
               autoFocus
             />
           </div>
 
           {errorMsg && (
-            <div className="error-badge text-rose text-sm">
+            <div className="error-badge text-rose text-sm my-2">
               {errorMsg}
             </div>
           )}
 
-          <div className="modal-footer px-0 pb-0 pt-2 border-none">
-            <button type="button" onClick={handleClose} className="btn btn-secondary">
+          <div className="modal-footer-password-spaced">
+            <button type="button" onClick={handleClose} className="btn btn-secondary px-4">
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary px-4">
               <span>Verificar</span>
               <ArrowRight size={16} />
             </button>

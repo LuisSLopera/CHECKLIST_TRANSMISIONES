@@ -20,15 +20,15 @@ Documento de referencia técnica para que cualquier agente de IA o desarrollador
 src/
 ├── App.jsx                     # Componente principal, estado global y listener de atajo Alt+A
 ├── main.jsx                    # Punto de entrada de React DOM
-├── index.css                   # Sistema de diseño CSS, modals superpuestos y animaciones
+├── index.css                   # Sistema de diseño CSS, modals superpuestos, spacing y animaciones
 ├── components/
-│   ├── HeaderMetadata.jsx      # Selectores de Persona Responsable, Tiempo Atendido y Rol
+│   ├── HeaderMetadata.jsx      # Selectores de Persona Responsable, Tiempo Atendido, Rol y Filtro Multi-Selección de Idiomas
 │   ├── ChecklistTree.jsx       # Renderizador de Fases, Subsecciones, Grupos e Ítems
 │   ├── ProgressBar.jsx          # Barra e indicador porcentual de avance de tareas
-│   ├── PasswordModal.jsx       # Modal superpuesto de verificación de clave de seguridad
-│   └── OptionsManagerModal.jsx # Modal de administración de variables desplegables
+│   ├── PasswordModal.jsx       # Modal superpuesto con espaciados amplios de verificación de clave
+│   └── OptionsManagerModal.jsx # Modal de administración de variables desplegables (4 pestañas)
 └── utils/
-    └── markdownParser.js       # Parseador AST de Markdown, filtrado por Rol y generador de reportes
+    └── markdownParser.js       # Parseador AST de Markdown, filtrado por Rol/Multi-Idioma y generador de reportes
 ```
 
 ---
@@ -47,38 +47,44 @@ El parseador [`src/utils/markdownParser.js`](./src/utils/markdownParser.js) proc
 
 ---
 
-## 🎭 4. Filtrado por Rol
+## 🎭 4. Filtrado por Rol y Selección Múltiple de Idiomas
 
-La función `filterDataByRole(parsedData, selectedRole)` filtra dinámicamente el árbol parseado según la opción seleccionada:
-- **Global**: Retorna la totalidad del árbol.
-- **Transmisiones**: Muestra únicamente las subsecciones con título `### Transmisiones`.
-- **Zoom**: Muestra únicamente las subsecciones con título `### Zoom`.
+La función `filterDataByRoleAndLanguage(parsedData, selectedRole, selectedLanguages)` filtra dinámicamente el árbol parseado según:
+1. **Filtro por Rol**:
+   - **Global**: Ubicado elegantemente en la parte superior derecha de la tarjeta de Rol. Retorna la totalidad del árbol.
+   - **Transmisiones**: Muestra únicamente las subsecciones con título `### Transmisiones`.
+   - **Zoom**: Muestra únicamente las subsecciones con título `### Zoom`.
+2. **Filtro por Selección Múltiple de Idiomas**:
+   - Soporta seleccionar simultáneamente uno o varios idiomas (ej. `["Español", "Ingles"]`).
+   - Botón interactivo de pills para alternar selección.
+   - **"Todos"**: Muestra todos los sub-ítems de idiomas.
+   - **"Español"**: Filtra sub-ítems pertenecientes a Español.
+   - **"Ingles"**: Filtra sub-ítems pertenecientes a Inglés.
+   - **"Otros"**: Filtra sub-ítems pertenecientes a otros idiomas (ej. `Frances`, `Frances / Italiano`).
 
 ---
 
-## 🔒 5. Seguridad y Atajo Secreto `Alt + A`
+## 🔒 5. Seguridad, Atajo Secreto `Alt + A` y Diseño de Modales
 
-1. **Supresión de Edición Pública**: No existe botón ni modal público para editar el Markdown en vivo.
+1. **Supresión de Edición Pública**: No existe botón público para editar el Markdown en vivo.
 2. **Atajo de Teclado Protegido (`Alt + A`)**:
    - Al presionar **`Alt + A`** en cualquier lugar de la web, se activa el evento `keydown` registrado en `App.jsx`, abriendo el [`PasswordModal.jsx`](./src/components/PasswordModal.jsx).
-3. **Modal Superpuesto de Alta Prioridad**:
-   - `PasswordModal` y `OptionsManagerModal` utilizan la clase CSS `.superposed-modal` con `z-index: 99999` y filtro de desenfoque de fondo (`backdrop-filter: blur(12px)`).
+3. **Modal Superpuesto con Espaciado Amplio**:
+   - `PasswordModal` y `OptionsManagerModal` cuentan con separación de márgenes, flex-gap y padding interno holgado.
 4. **Cálculo Dinámico de Clave (`AAAAMMDD`)**:
-   - La clave se valida contra la fecha actual local en formato `YYYYMMDD` (ej. `20261007`).
-   - Por razones de seguridad, **no se muestra ningún texto de ejemplo, pista ni formato en el campo de texto ni en mensajes de error**.
+   - La clave se valida contra la fecha actual local en formato `YYYYMMDD` (ej. `20261008`).
 
 ---
 
-## 📊 6. Cálculo de Avance Porcentual
+## 🔄 6. Reinicio Total de la Sesión
 
-- El cálculo de progreso de tareas **únicamente computa casillas hojas (Leaf Checkboxes)**.
-- Los títulos de grupos (ej. `- Crear miniatura`) **NO alteran ni duplican** la cantidad total de tareas ni el porcentaje.
+- El botón **Reiniciar** limpia las casillas marcadas, el área de observaciones **Y TAMBIÉN** resetea los parámetros de transmisión (Persona Responsable, Tiempo Atendido, Rol e Idioma Seleccionado) a sus valores iniciales por defecto.
 
 ---
 
 ## 🚀 7. Guía para Futuros Agentes de IA
 
 Si un nuevo agente necesita modificar la aplicación:
-1. Para modificar la lógica de parsing de Markdown: Editar [`src/utils/markdownParser.js`](./src/utils/markdownParser.js).
-2. Para cambiar los valores iniciales predeterminados de Persona, Tiempo o Rol: Editar `DEFAULT_OPTIONS` en [`src/App.jsx`](./src/App.jsx).
+1. Para modificar la lógica de parsing o filtrado por idioma/rol: Editar [`src/utils/markdownParser.js`](./src/utils/markdownParser.js).
+2. Para cambiar los valores iniciales predeterminados: Editar `DEFAULT_OPTIONS` en [`src/App.jsx`](./src/App.jsx).
 3. Para validar la compilación antes de responder al usuario: Ejecutar `npm run build`.

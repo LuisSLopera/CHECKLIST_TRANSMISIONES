@@ -18,7 +18,7 @@ import PasswordModal from './components/PasswordModal';
 
 import { 
   parseChecklistMarkdown, 
-  filterDataByRole, 
+  filterDataByRoleAndLanguage, 
   generateMarkdownReport,
   generateWhatsAppSummary 
 } from './utils/markdownParser';
@@ -40,6 +40,12 @@ const DEFAULT_OPTIONS = {
     "Global",
     "Transmisiones",
     "Zoom"
+  ],
+  idiomas: [
+    "Todos",
+    "Español",
+    "Ingles",
+    "Otros"
   ]
 };
 
@@ -186,13 +192,22 @@ export default function App() {
   // Options dropdown state (Persisted in localStorage)
   const [options, setOptions] = useState(() => {
     const saved = localStorage.getItem('checklist_options');
-    return saved ? JSON.parse(saved) : DEFAULT_OPTIONS;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (!parsed.idiomas) parsed.idiomas = DEFAULT_OPTIONS.idiomas;
+      return parsed;
+    }
+    return DEFAULT_OPTIONS;
   });
 
   // Header metadata selections
   const [persona, setPersona] = useState(() => localStorage.getItem('persona') || DEFAULT_OPTIONS.personas[0]);
   const [tiempo, setTiempo] = useState(() => localStorage.getItem('tiempo') || DEFAULT_OPTIONS.tiempos[0]);
   const [rol, setRol] = useState(() => localStorage.getItem('rol') || DEFAULT_OPTIONS.roles[0]);
+  const [idiomasSeleccionados, setIdiomasSeleccionados] = useState(() => {
+    const saved = localStorage.getItem('idiomas_seleccionados');
+    return saved ? JSON.parse(saved) : ["Todos"];
+  });
 
   // Markdown content
   const [rawMarkdown, setRawMarkdown] = useState(DEFAULT_FALLBACK_MD);
@@ -224,10 +239,11 @@ export default function App() {
     localStorage.setItem('persona', persona);
     localStorage.setItem('tiempo', tiempo);
     localStorage.setItem('rol', rol);
+    localStorage.setItem('idiomas_seleccionados', JSON.stringify(idiomasSeleccionados));
     localStorage.setItem('checklist_options', JSON.stringify(options));
     localStorage.setItem('checked_state', JSON.stringify(checkedState));
     localStorage.setItem('observations', observations);
-  }, [persona, tiempo, rol, options, checkedState, observations]);
+  }, [persona, tiempo, rol, idiomasSeleccionados, options, checkedState, observations]);
 
   // Global Hotkey Listener: Alt + A triggers password protected options modal
   useEffect(() => {
@@ -270,12 +286,12 @@ export default function App() {
     return parseChecklistMarkdown(rawMarkdown);
   }, [rawMarkdown]);
 
-  // Filter parsed data by selected Rol ("Global", "Transmisiones", "Zoom")
+  // Filter parsed data by selected Rol ("Global", "Transmisiones", "Zoom") and Multi-Selected Languages
   const filteredData = useMemo(() => {
-    return filterDataByRole(parsedData, rol);
-  }, [parsedData, rol]);
+    return filterDataByRoleAndLanguage(parsedData, rol, idiomasSeleccionados);
+  }, [parsedData, rol, idiomasSeleccionados]);
 
-  // Calculate totals for active role view (ONLY leaf checkboxes count towards progress)
+  // Calculate totals for active role & languages view (ONLY leaf checkboxes count towards progress)
   const { totalCount, completedCount } = useMemo(() => {
     let total = 0;
     let completed = 0;
@@ -317,12 +333,16 @@ export default function App() {
     setCheckedState(nextState);
   };
 
-  // Reset all progress
+  // Reset all progress AND transmission parameters
   const handleResetChecklist = () => {
-    if (confirm('¿Estás seguro de reiniciar las casillas de verificación para una nueva sesión?')) {
+    if (confirm('¿Estás seguro de reiniciar las casillas de verificación y los parámetros de transmisión para una nueva sesión?')) {
       setCheckedState({});
       setObservations('');
-      showToast('Checklist reiniciado correctamente');
+      setPersona(options.personas[0] || DEFAULT_OPTIONS.personas[0]);
+      setTiempo(options.tiempos[0] || DEFAULT_OPTIONS.tiempos[0]);
+      setRol(options.roles[0] || DEFAULT_OPTIONS.roles[0]);
+      setIdiomasSeleccionados(["Todos"]);
+      showToast('Checklist y parámetros reiniciados correctamente');
     }
   };
 
@@ -345,6 +365,7 @@ export default function App() {
     setPersona(DEFAULT_OPTIONS.personas[0]);
     setTiempo(DEFAULT_OPTIONS.tiempos[0]);
     setRol(DEFAULT_OPTIONS.roles[0]);
+    setIdiomasSeleccionados(["Todos"]);
     showToast('Opciones restauradas a los valores por defecto');
     return DEFAULT_OPTIONS;
   };
@@ -355,6 +376,7 @@ export default function App() {
       persona,
       tiempo,
       rol,
+      idiomasSeleccionados,
       observations,
       parsedData: filteredData,
       checkedState
@@ -377,6 +399,7 @@ export default function App() {
       persona,
       tiempo,
       rol,
+      idiomasSeleccionados,
       observations,
       totalCount,
       completedCount
@@ -436,6 +459,8 @@ export default function App() {
         setTiempo={setTiempo}
         rol={rol}
         setRol={setRol}
+        idiomasSeleccionados={idiomasSeleccionados}
+        setIdiomasSeleccionados={setIdiomasSeleccionados}
         options={options}
       />
 
@@ -451,7 +476,7 @@ export default function App() {
           </span>
         </div>
 
-        <div className="toolbar-buttons flex-wrap gap-2">
+        <div className="toolbar-buttons">
           <button onClick={handleResetChecklist} className="btn btn-secondary btn-sm">
             <RotateCcw size={15} />
             <span>Reiniciar</span>

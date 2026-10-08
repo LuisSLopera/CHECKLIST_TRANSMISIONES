@@ -146,26 +146,82 @@ export function parseChecklistMarkdown(mdText) {
 }
 
 /**
- * Filter phases and subsections based on selected Rol.
- * Roles: "Global" (all), "Transmisiones" (### Transmisiones), "Zoom" (### Zoom)
+ * Filter phases and subsections based on selected Rol and Multi-Selected Languages.
+ * Roles: "Global" (all), "Transmisiones", "Zoom"
+ * Languages: Array of strings e.g. ["Español", "Ingles"] or ["Todos"]
  */
-export function filterDataByRole(parsedData, selectedRole) {
+export function filterDataByRoleAndLanguage(parsedData, selectedRole, selectedLanguages) {
   if (!parsedData || !parsedData.phases) return { title: '', metaInfo: '', phases: [] };
-  if (!selectedRole || selectedRole.toLowerCase() === 'global') {
-    return parsedData;
-  }
 
-  const roleClean = selectedRole.trim().toLowerCase();
+  const roleClean = selectedRole ? selectedRole.trim().toLowerCase() : 'global';
+  const isGlobalRole = roleClean === 'global';
+
+  // Normalize selected languages array
+  const langsArray = Array.isArray(selectedLanguages) 
+    ? selectedLanguages 
+    : (selectedLanguages ? [selectedLanguages] : ['Todos']);
+
+  const isAllLangs = langsArray.length === 0 || langsArray.some(l => l.toLowerCase() === 'todos');
 
   const filteredPhases = parsedData.phases.map(phase => {
+    // 1. Filter subsections by Role
     const matchingSubsections = phase.subsections.filter(sub => {
+      if (isGlobalRole) return true;
       const subTitleClean = sub.title.trim().toLowerCase();
       return subTitleClean.includes(roleClean);
     });
 
+    // 2. Filter group items by Multi-Selected Languages
+    const langFilteredSubsections = matchingSubsections.map(sub => {
+      const filteredItems = sub.items.map(item => {
+        // If regular item or showing all languages, keep item intact
+        if (!item.isHeader || isAllLangs || !item.children || item.children.length === 0) {
+          return item;
+        }
+
+        // Apply language filter to children under group headers
+        const filteredChildren = item.children.filter(child => {
+          const childTextClean = child.text.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+          // Match child text against ANY of the selected languages
+          return langsArray.some(lang => {
+            const langClean = lang.trim().toLowerCase();
+            if (langClean === 'español' || langClean === 'espanol') {
+              return childTextClean.includes('espanol') || childTextClean.includes('español');
+            }
+            if (langClean === 'ingles') {
+              return childTextClean.includes('ingles') || childTextClean.includes('english');
+            }
+            if (langClean === 'otros') {
+              const isEspanol = childTextClean.includes('espanol') || childTextClean.includes('español');
+              const isIngles = childTextClean.includes('ingles') || childTextClean.includes('english');
+              return !isEspanol && !isIngles;
+            }
+
+            const searchKey = langClean.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return childTextClean.includes(searchKey);
+          });
+        });
+
+        return {
+          ...item,
+          children: filteredChildren
+        };
+      }).filter(item => {
+        // Keep group headers only if they still have children after filtering, or regular single items
+        if (item.isHeader) return item.children.length > 0;
+        return true;
+      });
+
+      return {
+        ...sub,
+        items: filteredItems
+      };
+    }).filter(sub => sub.items.length > 0);
+
     return {
       ...phase,
-      subsections: matchingSubsections
+      subsections: langFilteredSubsections
     };
   }).filter(phase => phase.subsections.length > 0);
 
@@ -175,14 +231,21 @@ export function filterDataByRole(parsedData, selectedRole) {
   };
 }
 
+// Backward compatibility alias
+export const filterDataByRole = (parsedData, selectedRole) => filterDataByRoleAndLanguage(parsedData, selectedRole, ['Todos']);
+
 /**
  * Generate formatted output markdown report based on current state
  */
-export function generateMarkdownReport({ persona, tiempo, rol, observations, parsedData, checkedState }) {
+export function generateMarkdownReport({ persona, tiempo, rol, idiomasSeleccionados, observations, parsedData, checkedState }) {
   let md = `# Checklist de transmisiones\n\n`;
   md += `**Persona responsable:** ${persona || '____________________'}\n`;
   md += `**Tiempo atendido:** ${tiempo || '____________________'}\n`;
-  md += `**Rol:** ${rol || '____________________'}\n\n`;
+  md += `**Rol:** ${rol || '____________________'}\n`;
+  if (idiomasSeleccionados && idiomasSeleccionados.length > 0) {
+    md += `**Idioma(s):** ${idiomasSeleccionados.join(', ')}\n`;
+  }
+  md += `\n`;
 
   if (parsedData.metaInfo) {
     const lines = parsedData.metaInfo.split('\n');
@@ -219,7 +282,7 @@ export function generateMarkdownReport({ persona, tiempo, rol, observations, par
 /**
  * Generate WhatsApp / Text summary
  */
-export function generateWhatsAppSummary({ persona, tiempo, rol, observations, totalCount, completedCount }) {
+export function generateWhatsAppSummary({ persona, tiempo, rol, idiomasSeleccionados, observations, totalCount, completedCount }) {
   const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   
   let text = `📋 *REPORTE DE TRANSMISIÓN*\n`;
@@ -227,6 +290,9 @@ export function generateWhatsAppSummary({ persona, tiempo, rol, observations, to
   text += `👤 *Responsable:* ${persona || 'N/A'}\n`;
   text += `⏰ *Servicio:* ${tiempo || 'N/A'}\n`;
   text += `🎭 *Rol:* ${rol || 'N/A'}\n`;
+  if (idiomasSeleccionados && idiomasSeleccionados.length > 0) {
+    text += `🌐 *Idioma(s):* ${idiomasSeleccionados.join(', ')}\n`;
+  }
   text += `📊 *Progreso:* ${completedCount}/${totalCount} (${percent}%)\n`;
   text += `-----------------------------------\n`;
   if (observations) {

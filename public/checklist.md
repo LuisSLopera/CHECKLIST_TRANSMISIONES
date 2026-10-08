@@ -8,6 +8,8 @@
 
 **Rol:** ____________________
 
+**Idioma:** __________________
+
   
 
 > **Columnas de revisión:** Rev (revisión general), Rev Eng (inglés), Rev It/Fr (italiano/francés).
@@ -58,7 +60,7 @@
 
  - [ ] Ingles
 
- - [ ] Frances
+ - [ ] Otros
 
 
 - Programar transmision you tube
@@ -67,7 +69,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Configurar you tube en OBS
 
@@ -75,7 +77,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Programar transmision facebook
 
@@ -83,7 +85,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Configurar facebook en OBS
 
@@ -91,7 +93,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
   
 
@@ -163,7 +165,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Segunda revision - flujo transmision You tube
 
@@ -171,7 +173,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Tercera revision - flujo transmision You tube
 
@@ -179,7 +181,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Primera revision - flujo transmision Facebook
 
@@ -187,7 +189,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Segunda revision - flujo transmision Facebook
 
@@ -195,7 +197,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Tercera revision - flujo transmision Facebook
 
@@ -203,7 +205,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Control de volumen
 
@@ -211,7 +213,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
   
 
@@ -229,7 +231,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
 - Detener transmision Youtube
 
@@ -237,7 +239,7 @@
 
   - [ ] Ingles
 
-  - [ ] Frances / Italiano
+  - [ ] Otros
 
   
 

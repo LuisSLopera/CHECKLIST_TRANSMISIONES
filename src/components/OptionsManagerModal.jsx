@@ -12,25 +12,29 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
 
   if (!isOpen) return null;
 
+  const currentTabKey = activeTab in localOptions ? activeTab : 'personas';
+
   const handleAddItem = (category) => {
     if (!newItemText.trim()) return;
-    if (localOptions[category].includes(newItemText.trim())) {
+    const catList = localOptions[category] || [];
+    if (catList.includes(newItemText.trim())) {
       alert('Esta opción ya existe.');
       return;
     }
     setLocalOptions({
       ...localOptions,
-      [category]: [...localOptions[category], newItemText.trim()]
+      [category]: [...catList, newItemText.trim()]
     });
     setNewItemText('');
   };
 
   const handleRemoveItem = (category, index) => {
-    if (localOptions[category].length <= 1) {
+    const catList = localOptions[category] || [];
+    if (catList.length <= 1) {
       alert('Debes mantener al menos una opción en el listado.');
       return;
     }
-    const updated = localOptions[category].filter((_, i) => i !== index);
+    const updated = catList.filter((_, i) => i !== index);
     setLocalOptions({
       ...localOptions,
       [category]: updated
@@ -52,12 +56,13 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
   const tabLabels = {
     personas: 'Personas Responsables',
     tiempos: 'Tiempos Atendidos',
-    roles: 'Roles de Operación'
+    roles: 'Roles de Operación',
+    idiomas: 'Idiomas'
   };
 
   return (
     <div className="modal-overlay superposed-modal" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content modal-md" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">Administrar Opciones Desplegables</h3>
           <button className="btn btn-icon btn-secondary" onClick={onClose}>
@@ -65,7 +70,7 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="modal-body modal-body-spaced">
           {/* Tabs */}
           <div className="options-tabs">
             {Object.keys(tabLabels).map((key) => (
@@ -83,15 +88,15 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
           <div className="add-option-row">
             <input
               type="text"
-              placeholder={`Agregar nuevo en ${tabLabels[activeTab]}...`}
+              placeholder={`Agregar nuevo en ${tabLabels[currentTabKey]}...`}
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddItem(activeTab)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddItem(currentTabKey)}
               className="custom-input"
             />
             <button 
-              className="btn btn-primary"
-              onClick={() => handleAddItem(activeTab)}
+              className="btn btn-primary btn-add-option"
+              onClick={() => handleAddItem(currentTabKey)}
             >
               <Plus size={16} />
               <span>Añadir</span>
@@ -100,11 +105,11 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
 
           {/* Items list */}
           <div className="options-list">
-            {localOptions[activeTab].map((item, idx) => (
+            {(localOptions[currentTabKey] || []).map((item, idx) => (
               <div key={idx} className="option-item-row">
                 <span className="option-item-text">{item}</span>
                 <button
-                  onClick={() => handleRemoveItem(activeTab, idx)}
+                  onClick={() => handleRemoveItem(currentTabKey, idx)}
                   className="btn btn-icon btn-rose btn-sm"
                   title="Eliminar opción"
                 >
@@ -115,7 +120,7 @@ export default function OptionsManagerModal({ isOpen, onClose, options, onSaveOp
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer modal-footer-spaced">
           <button onClick={handleReset} className="btn btn-secondary">
             <RotateCcw size={16} />
             <span>Restaurar Predeterminados</span>
