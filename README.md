@@ -1,4 +1,5 @@
 # 📡 Checklist de Transmisiones - Web Application
+By: Luis Sebastian Lopera
 
 Aplicación web moderna e interactiva diseñada para el control de transmisiones en vivo en salas de control (Control Room). La aplicación carga y sincroniza en tiempo real los datos a partir del archivo Markdown [`checklist.md`](./checklist.md). Si el archivo cambia en el disco, el formulario se actualiza automáticamente.
 
